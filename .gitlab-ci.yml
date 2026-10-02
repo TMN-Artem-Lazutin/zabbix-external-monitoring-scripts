@@ -1,0 +1,57 @@
+stages:
+  - validate
+  - deploy
+
+image: python:3.12-slim
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  ANSIBLE_FORCE_COLOR: "True"
+  ANSIBLE_HOST_KEY_CHECKING: "True"
+
+cache:
+  paths:
+    - .cache/pip/
+
+validate:
+  stage: validate
+  before_script:
+    - apt-get update && apt-get install -y --no-install-recommends openssh-client
+    - rm -rf /var/lib/apt/lists/*
+    - python -m pip install --upgrade pip
+    - pip install "ansible-core>=2.17,<2.20" ansible-lint
+    - ansible-galaxy collection install -r ansible/requirements.yml
+  script:
+    - ansible-lint ansible/
+
+.deploy_template:
+  stage: deploy
+  before_script:
+    - apt-get update && apt-get install -y --no-install-recommends openssh-client
+    - rm -rf /var/lib/apt/lists/*
+    - python -m pip install --upgrade pip
+    - pip install "ansible-core>=2.17,<2.20"
+    - ansible-galaxy collection install -r ansible/requirements.yml
+    - install -d -m 700 ~/.ssh
+    # SSH_PRIVATE_KEY and SSH_KNOWN_HOSTS are protected GitLab CI/CD
+    # variables of type "File". Credentials are not stored in the repository.
+    - install -m 600 "$SSH_PRIVATE_KEY" ~/.ssh/id_ed25519
+    - install -m 600 "$SSH_KNOWN_HOSTS" ~/.ssh/known_hosts
+  script:
+    - >-
+      ansible-playbook
+      -i "ansible/inventory/${INVENTORY_FILE}"
+      ansible/playbook.yml
+      -e "zabbix_custom_checks_profile=${CONFIG_PROFILE}"
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: manual
+
+# Example only. In a real project, provide a private inventory to the runner.
+deploy_example:
+  extends: .deploy_template
+  variables:
+    INVENTORY_FILE: "example.ini"
+    CONFIG_PROFILE: "default"
+  environment:
+    name: example

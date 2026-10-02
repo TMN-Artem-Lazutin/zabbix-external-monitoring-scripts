@@ -1,0 +1,13 @@
+---
+- name: Deploy and configure Zabbix Agent 2
+  hosts: all
+  gather_facts: true
+
+  tasks:
+    - name: Install and configure Zabbix Agent 2
+      ansible.builtin.include_role:
+        name: zabbix_agent_wrapper
+
+    - name: Deploy custom monitoring checks
+      ansible.builtin.include_role:
+        name: zabbix_custom_checks

@@ -1,0 +1,22 @@
+---
+- name: Create Windows custom scripts directory
+  ansible.windows.win_file:
+    path: 'C:\Program Files\Zabbix Agent 2\scripts'
+    state: directory
+
+- name: Create Windows Zabbix Agent 2 include directory
+  ansible.windows.win_file:
+    path: 'C:\Program Files\Zabbix Agent 2\zabbix_agent2.d'
+    state: directory
+
+- name: Deploy Windows custom scripts
+  ansible.windows.win_copy:
+    src: "{{ zabbix_custom_checks_source }}/windows/scripts/"
+    dest: 'C:\Program Files\Zabbix Agent 2\scripts\'
+  notify: Restart Zabbix Agent 2 on Windows
+
+- name: Deploy Windows UserParameter configuration
+  ansible.windows.win_copy:
+    src: "{{ zabbix_custom_checks_source }}/windows/zabbix_agent2.d/"
+    dest: 'C:\Program Files\Zabbix Agent 2\zabbix_agent2.d\'
+  notify: Restart Zabbix Agent 2 on Windows

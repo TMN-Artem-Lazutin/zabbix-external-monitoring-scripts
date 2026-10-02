@@ -1,0 +1,13 @@
+---
+- name: Restart Zabbix Agent 2 on Linux
+  ansible.builtin.service:
+    name: zabbix-agent2
+    state: restarted
+  become: true
+  when: ansible_os_family != "Windows"
+
+- name: Restart Zabbix Agent 2 on Windows
+  ansible.windows.win_service:
+    name: "Zabbix Agent 2"
+    state: restarted
+  when: ansible_os_family == "Windows"

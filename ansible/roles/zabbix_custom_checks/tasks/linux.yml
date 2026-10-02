@@ -1,0 +1,38 @@
+---
+- name: Create Linux custom scripts directory
+  ansible.builtin.file:
+    path: /usr/local/lib/zabbix/custom
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  become: true
+
+- name: Create Linux Zabbix Agent 2 include directory
+  ansible.builtin.file:
+    path: /etc/zabbix/zabbix_agent2.d
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  become: true
+
+- name: Deploy Linux custom scripts
+  ansible.builtin.copy:
+    src: "{{ zabbix_custom_checks_source }}/linux/scripts/"
+    dest: /usr/local/lib/zabbix/custom/
+    owner: root
+    group: root
+    mode: "0755"
+  become: true
+  notify: Restart Zabbix Agent 2 on Linux
+
+- name: Deploy Linux UserParameter configuration
+  ansible.builtin.copy:
+    src: "{{ zabbix_custom_checks_source }}/linux/zabbix_agent2.d/"
+    dest: /etc/zabbix/zabbix_agent2.d/
+    owner: root
+    group: root
+    mode: "0644"
+  become: true
+  notify: Restart Zabbix Agent 2 on Linux

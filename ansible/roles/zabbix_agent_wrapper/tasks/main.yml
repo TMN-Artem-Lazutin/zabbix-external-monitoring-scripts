@@ -1,0 +1,19 @@
+---
+- name: Use native Arch Linux installation path
+  ansible.builtin.include_tasks: archlinux.yml
+  when: ansible_os_family == "Archlinux"
+
+- name: Deploy Zabbix Agent 2 using community.zabbix
+  ansible.builtin.include_role:
+    name: community.zabbix.zabbix_agent
+  vars:
+    zabbix_agent2: true
+    zabbix_agent_hostname: "{{ inventory_hostname }}"
+    zabbix_agent_server: "{{ monitoring_server_passive }}"
+    zabbix_agent_serveractive: "{{ monitoring_server_active }}"
+    zabbix_agent_version: "{{ zabbix_agent_version }}"
+    zabbix_agent_version_long: "{{ zabbix_agent_version_long }}"
+    zabbix_agent_detect_ip: false
+    zabbix_agent_package_remove: true
+    zabbix_win_firewall_management: "{{ zabbix_manage_windows_firewall }}"
+  when: ansible_os_family != "Archlinux"

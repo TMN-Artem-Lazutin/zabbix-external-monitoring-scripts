@@ -1,0 +1,49 @@
+---
+- name: Install Zabbix Agent 2 on Arch Linux
+  community.general.pacman:
+    name: zabbix-agent2
+    state: present
+    update_cache: true
+  become: true
+
+- name: Ensure custom configuration directory exists
+  ansible.builtin.file:
+    path: /etc/zabbix/zabbix_agent2.d
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  become: true
+
+- name: Configure Zabbix Agent 2 on Arch Linux
+  ansible.builtin.lineinfile:
+    path: /etc/zabbix/zabbix_agent2.conf
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    state: present
+  loop:
+    - regexp: '^#?\s*Include='
+      line: 'Include=/etc/zabbix/zabbix_agent2.d/*.conf'
+    - regexp: '^Server='
+      line: 'Server={{ monitoring_server_passive }}'
+    - regexp: '^ServerActive='
+      line: 'ServerActive={{ monitoring_server_active }}'
+    - regexp: '^Hostname='
+      line: 'Hostname={{ inventory_hostname }}'
+  become: true
+  register: arch_zabbix_agent_config
+
+- name: Restart Zabbix Agent 2 when Arch configuration changed
+  ansible.builtin.systemd_service:
+    name: zabbix-agent2
+    state: restarted
+    enabled: true
+  become: true
+  when: arch_zabbix_agent_config is changed
+
+- name: Enable and start Zabbix Agent 2 on Arch Linux
+  ansible.builtin.systemd_service:
+    name: zabbix-agent2
+    state: started
+    enabled: true
+  become: true

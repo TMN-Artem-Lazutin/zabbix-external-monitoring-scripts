@@ -1,0 +1,13 @@
+---
+- name: Resolve custom checks source directory
+  ansible.builtin.set_fact:
+    zabbix_custom_checks_source: >-
+      {{ playbook_dir }}/configs/{{ zabbix_custom_checks_profile }}
+
+- name: Deploy Linux custom checks
+  ansible.builtin.include_tasks: linux.yml
+  when: ansible_os_family != "Windows"
+
+- name: Deploy Windows custom checks
+  ansible.builtin.include_tasks: windows.yml
+  when: ansible_os_family == "Windows"

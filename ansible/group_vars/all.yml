@@ -1,0 +1,14 @@
+---
+# Zabbix Agent 2 settings.
+# Keep environment-specific values in inventory/group_vars rather than in roles.
+zabbix_agent_version: "7.0"
+zabbix_agent_version_long: "7.0.27"
+
+# Example DNS name. Replace it in your own inventory/group_vars.
+monitoring_server_passive: "zabbix.example.internal"
+monitoring_server_active: "zabbix.example.internal"
+
+# Profile under ansible/configs/<profile>/...
+zabbix_custom_checks_profile: "default"
+
+zabbix_manage_windows_firewall: true
